@@ -21,7 +21,7 @@ const formSchema = z.object({
   contact: z.string().min(10),
   address: z.string().min(15)
 });
-function page() {
+function Page() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -139,4 +139,4 @@ function page() {
   );
 }
 
-export default page;
+export default Page;
