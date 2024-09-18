@@ -1,6 +1,6 @@
 "use client";
 import { Product } from "@/Product";
-import { useCartStore } from "@/store/store";
+import { useStore } from "@/store/store";
 import React from "react";
 import RemoveFromCart from "./RemoveFromCart";
 
@@ -9,7 +9,7 @@ type Props = {
 };
 
 export default function AddToCart({ product }: Props) {
-  const [cart, addToCart] = useCartStore((state) => [
+  const [cart, addToCart] = useStore((state) => [
     state.cart,
     state.addToCart,
   ]);

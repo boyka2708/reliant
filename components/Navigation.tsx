@@ -21,11 +21,11 @@ function Navigation() {
     },
     {
       title: "Video Gallery",
-      href: "/",
+      href: "/video-gallery",
     },
     {
       title: "Brand Ambassador",
-      href: "/",
+      href: "/brand-ambassador",
     },
   ];
 
@@ -51,7 +51,7 @@ function Navigation() {
     },
     {
       title: "Service Policy",
-      href: "/",
+      href: "/service-policy",
     },
   ];
 
@@ -217,7 +217,7 @@ function Navigation() {
       </NavigationMenu>
 
       <Link
-        href="/"
+        href="/careers"
         className="hover:bg-blue-400 text-white bg-blue-500 rounded-xl py-[10px] px-3"
       >
         Careers

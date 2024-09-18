@@ -309,7 +309,7 @@ function Footer({}: Props) {
         </Collapse>
         <div className="flex justify-center space-x-5 my-9">
           <Link href="https://www.facebook.com/reliantaqua">
-            <Facebook style={{ color: "black", fontSize: '1.8rem' }} />
+            <Facebook style={{ color: "1877F2", fontSize: '1.8rem' }} />
           </Link>
           <Link href="https://x.com/reliantaqua">
             <Twitter style={{ color: "3B82F6", fontSize: '1.8rem' }} />

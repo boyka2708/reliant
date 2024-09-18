@@ -1,37 +1,59 @@
-import { Product } from '@/Product';
-import { create } from 'zustand'
+import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
+import { User } from 'firebase/auth';
+import { Product } from '@/Product';
+import { auth } from '../firebase'; // Adjust the path to your Firebase setup
+import { onAuthStateChanged, signOut} from 'firebase/auth';
 
-interface Cartstate {
+interface StoreState {
+  user: User | null;
+  setUser: (user: User | null) => void;
+  signOutUser: () => void;
+
   cart: Product[];
   addToCart: (product: Product) => void;
   removeFromCart: (product: Product) => void;
 }
-export const useCartStore = create<Cartstate>()(
+
+export const useStore = create<StoreState>()(
   devtools(
     persist(
-      (set,get) =>({
+      (set, get) => ({
+        user: null,
+        setUser: (user: User | null) => set({ user }),
+        signOutUser: async () => {
+          try {
+            await signOut(auth);
+            set({ user: null, cart: [] }); // Optional: Clear cart on sign out
+          } catch (error) {
+            console.error('Error signing out:', error);
+          }
+        },
         cart: [],
-        addToCart: (product) => {
+        addToCart: (product: Product) => {
           set((state) => ({
             cart: [...state.cart, product],
           }));
         },
-        removeFromCart : (product) => {
-          const producttoRemove = get().cart.findIndex((p) => p.title === product.title);
+        removeFromCart: (product: Product) => {
+          const index = get().cart.findIndex((p) => p.title === product.title);
 
-          set((state) => {
-            const newCart = [...state.cart];
-            newCart.splice(producttoRemove, 1);
-            return {cart: newCart};
-          });
-        }
+          if (index !== -1) {
+            set((state) => {
+              const newCart = [...state.cart];
+              newCart.splice(index, 1);
+              return { cart: newCart };
+            });
+          }
+        },
       }),
       {
-        name: 'cart'
+        name: 'store', // name of the item in localStorage
       }
     )
   )
-)
- 
- 
+);
+
+onAuthStateChanged(auth, (user) => {
+  useStore.getState().setUser(user);
+});

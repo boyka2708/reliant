@@ -104,7 +104,7 @@ export default function Home() {
       </Carousel>
 
       <div className="flex flex-col space-y-3 text-xs font-medium sm:text-base xl:flex-row justify-between items-center mx-auto border-2 w-4/5 p-2 sm:p-5 mt-5">
-        <Link href="/">
+        <Link href="/enquiry-feedback">
           <WebIcon className="text-2xl sm:text-3xl text-blue-500" />
           Web Based Technical Support
         </Link>

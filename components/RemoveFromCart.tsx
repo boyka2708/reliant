@@ -1,6 +1,6 @@
 "use client"
 import { Product } from "@/Product";
-import { useCartStore } from "@/store/store";
+import { useStore } from "@/store/store";
 import React from "react";
 
 type Props = {
@@ -8,7 +8,7 @@ type Props = {
 };
 
 export default function RemoveFromCart({ product }: Props) {
-  const [cart, removeFromCart] = useCartStore((state) => [
+  const [cart, removeFromCart] = useStore((state) => [
     state.cart,
     state.removeFromCart,
   ]);

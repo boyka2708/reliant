@@ -9,27 +9,31 @@ import ShoppingCartOutlinedIcon from "@mui/icons-material/ShoppingCartOutlined";
 import Navigation from "./Navigation";
 import { Drawer, List, ListItem, ListItemText, Collapse } from "@mui/material";
 import Link from "next/link";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { ExpandLess, ExpandMore } from "@mui/icons-material";
-import { useCartStore } from "@/store/store";
+import { useStore } from "@/store/store";
 import { Product } from "@/Product";
 import Data from "../data.json";
 
 function Header() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [suggestions, setSuggestions] = useState<Product[]>([]);
   const [openProducts, setOpenProducts] = useState(false);
   const [openTechnology, setOpenTechnology] = useState(false);
   const [openMedia, setOpenaMedia] = useState(false);
   const [openDealer, setOpenDealer] = useState(false);
   const [openSupport, setOpenSupport] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-  const cart = useCartStore((state) => state.cart);
+  const [search, setSearch] = useState<boolean>(false);
+  const cart = useStore((state) => state.cart);
   const total = cart.reduce((acc: number, currentProduct: Product) => {
     const priceNumber = parseFloat(currentProduct.price.replace(/,/g, ""));
     return acc + priceNumber;
   }, 0);
   const products: Product[] = Data;
 
+  const inputRef = useRef<HTMLInputElement>(null);
   useEffect(() => {
     const handleScroll = () => {
       const scrollTop = window.pageYOffset;
@@ -39,6 +43,23 @@ function Header() {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  useEffect(() => {
+    if (search && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [search]);
+
+  useEffect(() => {
+    if (searchQuery.length > 0) {
+      const filteredSuggestions = products.filter((product) =>
+        product.title.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+      setSuggestions(filteredSuggestions);
+    } else {
+      setSuggestions([]);
+    }
+  }, [searchQuery, products]);
 
   const toggleDrawer = () => {
     setIsDrawerOpen(!isDrawerOpen);
@@ -64,6 +85,29 @@ function Header() {
     setOpenSupport(!openSupport);
   };
 
+  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(event.target.value);
+  };
+
+  const showSearch = () => {
+    setSearch(!search);
+  };
+  const highlightMatch = (text: string, query: string) => {
+    const parts = text.split(new RegExp(`(${query})`, "gi"));
+    return (
+      <>
+        {parts.map((part, index) =>
+          part.toLowerCase() === query.toLowerCase() ? (
+            <span key={index} className="font-bold text-blue-500">
+              {part}
+            </span>
+          ) : (
+            part
+          )
+        )}
+      </>
+    );
+  };
   return (
     <header>
       <div className="flex flex-col md:flex-row justify-between text-sm font-normal text-gray-600 mr-2 p-2">
@@ -89,13 +133,13 @@ function Header() {
             Track Your Order
           </p>
           <p className="text-gray-300">|</p>
-          <p className="text-sm sm:text-sm">
+          <Link href="/account" className="text-sm sm:text-sm">
             <PersonOutlineOutlinedIcon
               style={{ fontSize: "1rem" }}
               className="text-gray-500 mr-1"
             />{" "}
             My Account
-          </p>
+          </Link>
         </div>
       </div>
       <hr />
@@ -106,23 +150,38 @@ function Header() {
             : `mt-7 hidden xl:flex justify-center space-x-8 items-center`
         }
       >
-        <Image
-          className="ml-6"
-          src="/images/Reliant-Logo-1.png"
-          alt="Logo"
-          width={200}
-          height={100}
-        />
+        <Link href="/">
+          <Image
+            className="ml-6"
+            src="/images/Reliant-Logo-1.png"
+            alt="Logo"
+            width={200}
+            height={100}
+          />
+        </Link>
         <button onClick={() => setIsDrawerOpen(true)}>
           {" "}
           <MenuOutlinedIcon />
         </button>
-        <form className="border-blue-500 border-2 bg-blue-500 flex items-center rounded-3xl">
+        <form className="relative z-20 border-blue-500 border-2 bg-blue-500 flex items-center rounded-3xl">
           <input
             placeholder="Search For Products"
             type="search"
+            value={searchQuery}
+            onChange={handleSearchChange}
             className="w-96 rounded-3xl p-2 text-left text-sm outline-none"
           />
+          {suggestions.length > 0 && (
+            <div className="absolute top-full left-0 w-full bg-white border rounded-b-3xl shadow-md z-10">
+              {suggestions.map((product) => (
+                <Link key={product.title} href={`/${product.title}`}>
+                  <span className="block p-2 hover:bg-gray-200">
+                    {highlightMatch(product.title, searchQuery)}
+                  </span>
+                </Link>
+              ))}
+            </div>
+          )}
         </form>
 
         <FavoriteBorderIcon style={{ fontSize: "2rem" }} />
@@ -152,13 +211,40 @@ function Header() {
           {" "}
           <MenuOutlinedIcon />
         </button>
+        <div className={search ? `block w-2/4` : `hidden`}>
+          <input
+            ref={inputRef}
+            placeholder="Search For Products"
+            type="search"
+            value={searchQuery}
+            onChange={handleSearchChange}
+            className="w-full rounded-3xl p-2 text-left text-sm border-blue-500 focus:border-none border"
+          />
+          {suggestions.length > 0 && (
+            <div className="absolute top-full left-0 w-full bg-white border rounded-b-3xl shadow-md z-10">
+              {suggestions.map((product) => (
+                <Link key={product.title} href={`/${product.title}`}>
+                  <span className="block p-2 hover:bg-gray-200">
+                    {highlightMatch(product.title, searchQuery)}
+                  </span>
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
         <div className="flex space-x-5 mr-6">
-          <SearchOutlinedIcon
-            style={{ fontSize: "1.5rem", color: "GrayText" }}
-          />
-          <PersonOutlineOutlinedIcon
-            style={{ fontSize: "1.5rem", color: "GrayText" }}
-          />
+          <span className="cursor-pointer" onClick={showSearch}>
+            <SearchOutlinedIcon
+              style={{ fontSize: "1.5rem", color: "GrayText" }}
+            />
+          </span>
+
+          <Link href="/account">
+            <PersonOutlineOutlinedIcon
+              style={{ fontSize: "1.5rem", color: "GrayText" }}
+            />
+          </Link>
+
           <Link href="/cart">
             <span className="relative">
               <ShoppingCartOutlinedIcon
@@ -198,11 +284,14 @@ function Header() {
             </ListItem>
             <Collapse in={openProducts} timeout="auto" unmountOnExit>
               <List component="div" disablePadding>
-                <ListItem button className="pl-4 flex flex-col items-start bg-slate-100">
+                <ListItem
+                  button
+                  className="pl-4 flex flex-col items-start bg-slate-100"
+                >
                   {products.map((product) => (
                     <Link key={product.title} href={`/${product.title}`}>
                       <span className="text-sm">{product.title}</span>
-                      <hr/>
+                      <hr />
                     </Link>
                   ))}
                 </ListItem>
@@ -259,12 +348,12 @@ function Header() {
                   </Link>
                 </ListItem>
                 <ListItem button className="pl-4 bg-slate-100">
-                  <Link href="/">
+                  <Link href="/video-gallery">
                     <span className="text-sm">Video Gallery</span>
                   </Link>
                 </ListItem>
                 <ListItem button className="pl-4 bg-slate-100">
-                  <Link href="/">
+                  <Link href="/brand-ambassador">
                     <span className="text-sm">Brand Ambassador</span>
                   </Link>
                 </ListItem>
@@ -311,14 +400,14 @@ function Header() {
                   </Link>
                 </ListItem>
                 <ListItem button className="pl-4 bg-slate-100">
-                  <Link href="/">
+                  <Link href="/service-policy">
                     <span className="text-sm">Service Policy</span>
                   </Link>
                 </ListItem>
               </List>
             </Collapse>
             <ListItem button>
-              <Link href="#Contact">
+              <Link href="/careers">
                 <span className="text-sm">Careers</span>
               </Link>
             </ListItem>
